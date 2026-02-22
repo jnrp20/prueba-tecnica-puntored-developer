@@ -1,33 +1,40 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { RechargesService } from './recharges.service';
-import { Transaction } from './transaction.entity';
-import { CreateRechargeDto, Operator } from './dto/create-recharge.dto';
+import { RechargesApplicationService } from './application/recharges-application.service';
+import { Transaction } from './domain/transaction';
+import {
+  CreateRechargeDto,
+  Operator,
+} from './infrastructure/http/dto/create-recharge.dto';
+import { TransactionRepository } from './domain/transaction.repository';
 
-describe('RechargesService', () => {
-  let service: RechargesService;
-  let repository: Repository<Transaction>;
+describe('RechargesApplicationService', () => {
+  let service: RechargesApplicationService;
+  let repository: {
+    create: jest.Mock;
+    save: jest.Mock;
+    findByUserId: jest.Mock;
+  };
 
   beforeEach(async () => {
+    repository = {
+      create: jest.fn(),
+      save: jest.fn(),
+      findByUserId: jest.fn(),
+    };
+
     const moduleRef = await Test.createTestingModule({
       providers: [
-        RechargesService,
+        RechargesApplicationService,
         {
-          provide: getRepositoryToken(Transaction),
-          useValue: {
-            create: jest.fn(),
-            save: jest.fn(),
-            find: jest.fn(),
-          },
+          provide: TransactionRepository,
+          useValue: repository,
         },
       ],
     }).compile();
 
-    service = moduleRef.get<RechargesService>(RechargesService);
-    repository = moduleRef.get<Repository<Transaction>>(
-      getRepositoryToken(Transaction),
+    service = moduleRef.get<RechargesApplicationService>(
+      RechargesApplicationService,
     );
   });
 
@@ -38,9 +45,9 @@ describe('RechargesService', () => {
       amount: 500,
     };
 
-    await expect(service.processRecharge('user-id', dto)).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+    await expect(
+      service.processRecharge('user-id', dto),
+    ).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('debería lanzar error si el monto es mayor al máximo', async () => {
@@ -50,9 +57,9 @@ describe('RechargesService', () => {
       amount: 200000,
     };
 
-    await expect(service.processRecharge('user-id', dto)).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+    await expect(
+      service.processRecharge('user-id', dto),
+    ).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('debería lanzar error si el número no inicia con 3', async () => {
@@ -62,9 +69,9 @@ describe('RechargesService', () => {
       amount: 5000,
     };
 
-    await expect(service.processRecharge('user-id', dto)).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+    await expect(
+      service.processRecharge('user-id', dto),
+    ).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('debería crear una transacción válida', async () => {
@@ -76,8 +83,8 @@ describe('RechargesService', () => {
 
     const created = { id: 'tx-id', ...dto } as Transaction;
 
-    jest.spyOn(repository, 'create').mockReturnValue(created);
-    jest.spyOn(repository, 'save').mockResolvedValue(created);
+    repository.create.mockReturnValue(created);
+    repository.save.mockResolvedValue(created);
 
     const result = await service.processRecharge('user-id', dto);
 

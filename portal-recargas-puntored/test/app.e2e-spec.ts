@@ -36,9 +36,7 @@ describe('AppController (e2e)', () => {
   });
 
   it('GET /error-simulado debería devolver 500', () => {
-    return request(app.getHttpServer())
-      .get('/error-simulado')
-      .expect(500);
+    return request(app.getHttpServer()).get('/error-simulado').expect(500);
   });
 
   it('POST /users debería crear un usuario nuevo', async () => {
@@ -49,7 +47,9 @@ describe('AppController (e2e)', () => {
       .send({ username, password: 'demo1234' })
       .expect(201);
 
-    expect(response.body).toEqual({
+    const body = response.body as { message: string };
+
+    expect(body).toEqual({
       message: 'Usuario creado correctamente',
     });
   });
@@ -60,7 +60,9 @@ describe('AppController (e2e)', () => {
       .send({ username: '' })
       .expect(400);
 
-    expect(Array.isArray(response.body.message)).toBe(true);
+    const body = response.body as { message: string[] };
+
+    expect(Array.isArray(body.message)).toBe(true);
   });
 
   it('POST /auth/login debería devolver un token con credenciales válidas', async () => {
@@ -77,7 +79,9 @@ describe('AppController (e2e)', () => {
       .send({ username, password })
       .expect(201);
 
-    expect(response.body.access_token).toBeDefined();
+    const body = response.body as { access_token: string };
+
+    expect(body.access_token).toBeDefined();
   });
 
   it('POST /auth/login debería devolver 401 con credenciales inválidas', async () => {
@@ -86,7 +90,9 @@ describe('AppController (e2e)', () => {
       .send({ username: 'noexiste', password: 'demo1234' })
       .expect(401);
 
-    expect(response.body.message).toBe('Credenciales inválidas');
+    const body = response.body as { message: string };
+
+    expect(body.message).toBe('Credenciales inválidas');
   });
 
   it('POST /recharges/buy debería crear una recarga válida', async () => {
@@ -103,7 +109,9 @@ describe('AppController (e2e)', () => {
       .send({ username, password })
       .expect(201);
 
-    const token = loginResponse.body.access_token;
+    const loginBody = loginResponse.body as { access_token: string };
+
+    const token = loginBody.access_token;
 
     const response = await request(app.getHttpServer())
       .post('/recharges/buy')
@@ -115,9 +123,15 @@ describe('AppController (e2e)', () => {
       })
       .expect(201);
 
-    expect(response.body.phoneNumber).toBe('3001234567');
-    expect(response.body.amount).toBe(5000);
-    expect(response.body.status).toBe('SUCCESS');
+    const body = response.body as {
+      phoneNumber: string;
+      amount: number;
+      status: string;
+    };
+
+    expect(body.phoneNumber).toBe('3001234567');
+    expect(body.amount).toBe(5000);
+    expect(body.status).toBe('SUCCESS');
   });
 
   it('GET /recharges/history debería devolver historial sin passwordHash', async () => {
@@ -134,7 +148,9 @@ describe('AppController (e2e)', () => {
       .send({ username, password })
       .expect(201);
 
-    const token = loginResponse.body.access_token;
+    const loginBody = loginResponse.body as { access_token: string };
+
+    const token = loginBody.access_token;
 
     await request(app.getHttpServer())
       .post('/recharges/buy')
@@ -151,10 +167,17 @@ describe('AppController (e2e)', () => {
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
 
-    expect(Array.isArray(response.body)).toBe(true);
-    expect(response.body.length).toBeGreaterThan(0);
-    expect(response.body[0].user.username).toBe(username);
-    expect(response.body[0].user.passwordHash).toBeUndefined();
+    const history = response.body as Array<{
+      user: {
+        username: string;
+        passwordHash?: string;
+      };
+    }>;
+
+    expect(Array.isArray(history)).toBe(true);
+    expect(history.length).toBeGreaterThan(0);
+    expect(history[0].user.username).toBe(username);
+    expect(history[0].user.passwordHash).toBeUndefined();
   });
 
   it('POST /recharges/buy debería devolver 400 si el monto es inválido', async () => {
@@ -171,7 +194,9 @@ describe('AppController (e2e)', () => {
       .send({ username, password })
       .expect(201);
 
-    const token = loginResponse.body.access_token;
+    const loginBody = loginResponse.body as { access_token: string };
+
+    const token = loginBody.access_token;
 
     await request(app.getHttpServer())
       .post('/recharges/buy')

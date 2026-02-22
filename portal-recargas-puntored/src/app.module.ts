@@ -4,8 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { RechargesModule } from './recharges/recharges.module';
-import { User } from './users/user.entity';
-import { Transaction } from './recharges/transaction.entity';
+import { UserOrm } from './users/infrastructure/persistence/user.orm-entity';
+import { TransactionOrm } from './recharges/infrastructure/persistence/transaction.orm-entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -15,7 +15,7 @@ import { AppService } from './app.service';
     TypeOrmModule.forRoot({
       type: 'sqlite',
       database: 'database.sqlite',
-      entities: [User, Transaction],
+      entities: [UserOrm, TransactionOrm],
       synchronize: true,
     }),
     UsersModule,
