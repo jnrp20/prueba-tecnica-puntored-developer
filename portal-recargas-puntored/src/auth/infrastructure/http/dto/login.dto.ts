@@ -1,9 +1,10 @@
-import { IsString, MinLength } from 'class-validator';
+import { IsNotEmpty, IsString, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class LoginDto {
   @ApiProperty({ description: 'Nombre de usuario', example: 'demo' })
   @IsString()
+  @IsNotEmpty({ message: 'El nombre de usuario es requerido' })
   username: string;
 
   @ApiProperty({

@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { RechargesService } from './recharges.service';
+import { RechargesApplicationService } from '../../application/recharges-application.service';
 import { CreateRechargeDto } from './dto/create-recharge.dto';
 
 type AuthenticatedRequest = {
@@ -16,7 +16,7 @@ type AuthenticatedRequest = {
 @Controller('recharges')
 @UseGuards(AuthGuard('jwt'))
 export class RechargesController {
-  constructor(private readonly rechargesService: RechargesService) {}
+  constructor(private readonly rechargesService: RechargesApplicationService) {}
 
   @Post('buy')
   @ApiOperation({ summary: 'Realiza una recarga de saldo para un usuario' })

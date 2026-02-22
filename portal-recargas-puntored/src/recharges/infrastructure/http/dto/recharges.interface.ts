@@ -1,4 +1,4 @@
-import { Transaction } from '../transaction.entity';
+import { Transaction } from '../../../domain/transaction';
 
 export interface UserPublic {
   id: string;
@@ -6,7 +6,7 @@ export interface UserPublic {
 }
 
 export interface TransactionHistoryItem {
-  id: string;
+  id: string | null;
   phoneNumber: string;
   operator: string;
   amount: number;

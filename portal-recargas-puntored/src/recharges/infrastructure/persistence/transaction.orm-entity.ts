@@ -5,12 +5,12 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { User } from '../users/user.entity';
+import { UserOrm } from '../../../users/infrastructure/persistence/user.orm-entity';
 
 export type TransactionStatus = 'SUCCESS' | 'FAILED';
 
 @Entity()
-export class Transaction {
+export class TransactionOrm {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -29,6 +29,6 @@ export class Transaction {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne(() => User)
-  user: User;
+  @ManyToOne(() => UserOrm)
+  user: UserOrm;
 }
