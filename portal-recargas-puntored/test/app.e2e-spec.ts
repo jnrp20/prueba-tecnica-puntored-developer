@@ -8,6 +8,9 @@ describe('AppController (e2e)', () => {
 
   beforeAll(async () => {
     process.env.JWT_SECRET = 'test-secret';
+    // Aislar la base de datos de e2e para no contaminar database.sqlite
+    process.env.DB_TYPE = 'sqlite';
+    process.env.DB_SQLITE_PATH = ':memory:';
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
