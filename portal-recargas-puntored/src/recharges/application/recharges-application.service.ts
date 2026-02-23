@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Transaction } from '../domain/transaction';
 import { TransactionHistoryItem } from '../infrastructure/http/dto/recharges.interface';
 import { TransactionRepository } from '../domain/transaction.repository';
@@ -15,6 +15,14 @@ export class RechargesApplicationService {
       amount: number;
     },
   ): Promise<Transaction> {
+    if (dto.amount < 1000 || dto.amount > 100000) {
+      throw new BadRequestException('Monto fuera de rango permitido');
+    }
+
+    if (dto.phoneNumber.charAt(0) !== '3') {
+      throw new BadRequestException('Número de teléfono debe iniciar con 3');
+    }
+
     const transaction = this.transactionsRepository.create({
       phoneNumber: dto.phoneNumber,
       operator: dto.operator,

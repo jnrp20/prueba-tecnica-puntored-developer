@@ -1,4 +1,8 @@
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { User } from '../domain/user';
 import { UserRepository } from '../domain/user.repository';
 import { PasswordHasher } from '../domain/password-hasher';
@@ -18,6 +22,9 @@ export class UsersApplicationService {
     const validateUserExist = await this.findByUsername(username);
     if (validateUserExist) {
       throw new ConflictException(`El usuario ${username} ya existe`);
+    }
+    if (username.length === 0 || username.trim() === '') {
+      throw new ConflictException(`El usuario no puede estar vacío`);
     }
     if (password.length === 0 || password.trim() === '') {
       throw new BadRequestException(`La contraseña no puede estar vacía`);

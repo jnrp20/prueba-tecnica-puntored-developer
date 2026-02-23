@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
@@ -12,11 +12,31 @@ import { AppService } from './app.service';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRoot({
-      type: 'sqlite',
-      database: 'database.sqlite',
-      entities: [UserOrm, TransactionOrm],
-      synchronize: true,
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const dbType = config.get<'sqlite' | 'postgres'>('DB_TYPE', 'sqlite');
+
+        if (dbType === 'postgres') {
+          return {
+            type: 'postgres' as const,
+            host: config.get<string>('DB_HOST', 'localhost'),
+            port: config.get<number>('DB_PORT', 5432),
+            username: config.get<string>('DB_USERNAME', 'puntored'),
+            password: config.get<string>('DB_PASSWORD', 'puntored'),
+            database: config.get<string>('DB_NAME', 'puntored_db'),
+            entities: [UserOrm, TransactionOrm],
+            synchronize: true,
+          };
+        }
+
+        return {
+          type: 'sqlite' as const,
+          database: config.get<string>('DB_SQLITE_PATH', 'database.sqlite'),
+          entities: [UserOrm, TransactionOrm],
+          synchronize: true,
+        };
+      },
     }),
     UsersModule,
     AuthModule,
