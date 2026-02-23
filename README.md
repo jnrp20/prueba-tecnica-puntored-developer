@@ -55,7 +55,7 @@
 - Testing
   - `jest`, `@nestjs/testing`, `supertest`, `ts-jest`
 
-## Decisiones Técnicas (Breve Justificación)
+## Decisiones Técnicas
 
 
 - Arquitectura por Capas con DDD por Módulo
